@@ -32,14 +32,16 @@ namespace Promitor.Integrations.Azure.Authentication
 
             string applicationKey;
 
-            if (!string.IsNullOrEmpty(authenticationConfiguration.AppKeySecretFilePath))
+            if (!string.IsNullOrEmpty(authenticationConfiguration.SecretFilePath) && !string.IsNullOrEmpty(authenticationConfiguration.SecretFileName))
             {
-                if (!Directory.Exists(authenticationConfiguration.AppKeySecretFilePath))
-                {
-                    throw new AuthenticationException("Invalid secret path was configured for service principle authentication");
-                }
+                var filePath = Path.Combine(authenticationConfiguration.SecretFilePath, authenticationConfiguration.SecretFileName);
 
-                applicationKey = File.ReadAllText(Path.Combine(authenticationConfiguration.AppKeySecretFilePath, authenticationConfiguration.AppKeySecretFileName));
+                if (!File.Exists(filePath))
+                {
+                    throw new AuthenticationException("Invalid secret file path was configured for service principle authentication");
+                }
+                
+                applicationKey = File.ReadAllText(filePath);
             }
             else
             {

@@ -1,14 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Bogus;
 using JustEat.StatsD;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 using Newtonsoft.Json;
 using Promitor.Core.Metrics;
-using Promitor.Integrations.Sinks.Prometheus.Configuration;
 using Promitor.Integrations.Sinks.Statsd;
 using Promitor.Integrations.Sinks.Statsd.Configuration;
 using Promitor.Tests.Unit.Generators;
@@ -129,11 +127,11 @@ namespace Promitor.Tests.Unit.Metrics.Sinks
 
             // Act & Assert
             // ReSharper disable once ExpressionIsAlwaysNull
-            await Assert.ThrowsAsync<ArgumentNullException>(() => metricSink.ReportMetricAsync(metricName, metricDescription, scrapeResult));
+            await Assert.ThrowsAsync<ArgumentException>(() => metricSink.ReportMetricAsync(metricName, metricDescription, scrapeResult));
         }
 
         [Fact]
-        public async Task ReportMetricAsync_GetsValidInputWithGenevaFormat_SuccessfullyWritesMetric()
+        public async Task ReportMetricAsync_UsesValidInputWithGenevaFormat_SuccessfullyWritesMetric()
         {
             // Arrange
             var metricName = BogusGenerator.Name.FirstName();
@@ -149,11 +147,11 @@ namespace Promitor.Tests.Unit.Metrics.Sinks
 
             var bucket = JsonConvert.SerializeObject(new
             {
-                Account = statsDSinkConfiguration.CurrentValue.Geneva.Account,
-                Namespace = statsDSinkConfiguration.CurrentValue.Geneva.Namespace,
+                statsDSinkConfiguration.CurrentValue.Geneva.Account,
+                statsDSinkConfiguration.CurrentValue.Geneva.Namespace,
                 Metric = metricName,
                 Dims = scrapeResult.Labels
-            }); ;
+            });
 
             // Act
             await metricSink.ReportMetricAsync(metricName, metricDescription, scrapeResult);

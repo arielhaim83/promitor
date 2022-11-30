@@ -361,16 +361,16 @@ namespace Promitor.Tests.Unit.Configuration
         {
             // Arrange
             var port = BogusGenerator.Random.Int();
-            var geneva_account = "abc";
-            var geneva_namespace = "xyz";
+            var genevaAccountName = "abc";
+            var genevaNamespace = "xyz";
 
             var geneva = new GenevaConfiguration {
-                Account = geneva_account,
-                Namespace = geneva_namespace
+                Account = genevaAccountName,
+                Namespace = genevaNamespace
             };
 
             var configuration = await RuntimeConfigurationGenerator.WithServerConfiguration()
-                .WithStatsDMetricSink(port: port, geneva: geneva)
+                .WithStatsDMetricSink(port: port, genevaMetadata: geneva)
                 .GenerateAsync();
 
             // Act
@@ -381,10 +381,9 @@ namespace Promitor.Tests.Unit.Configuration
             Assert.NotNull(runtimeConfiguration.MetricSinks);
             Assert.NotNull(runtimeConfiguration.MetricSinks.Statsd);
             Assert.Equal(port, runtimeConfiguration.MetricSinks.Statsd.Port);
-            Assert.Equal(geneva_account , runtimeConfiguration.MetricSinks.Statsd.Geneva.Account);
-            Assert.Equal(geneva_namespace, runtimeConfiguration.MetricSinks.Statsd.Geneva.Namespace);
+            Assert.Equal(genevaAccountName, runtimeConfiguration.MetricSinks.Statsd.Geneva.Account);
+            Assert.Equal(genevaNamespace, runtimeConfiguration.MetricSinks.Statsd.Geneva.Namespace);
         }
-
 
         [Fact]
         public async Task RuntimeConfiguration_HasConfiguredCollectorUriInOpenTelemetryCollectorEndpoint_UsesConfigured()

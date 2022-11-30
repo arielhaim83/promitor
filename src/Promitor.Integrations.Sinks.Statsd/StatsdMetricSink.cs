@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using GuardNet;
 using JustEat.StatsD;
@@ -16,8 +17,7 @@ namespace Promitor.Integrations.Sinks.Statsd
     {
         private readonly ILogger<StatsdMetricSink> _logger;
         private readonly IStatsDPublisher _statsDPublisher;
-        private readonly IOptionsMonitor<StatsdSinkConfiguration> _statsDConfiguration;
-        private readonly Dictionary<string, Func<string, string, double, Dictionary<string, string>, Task>> _reportMetricsActions;
+        private readonly IOptionsMonitor<StatsdSinkConfiguration> _statsDConfiguration;       
 
         public StatsdMetricSink(IStatsDPublisher statsDPublisher, IOptionsMonitor<StatsdSinkConfiguration> configuration, ILogger<StatsdMetricSink> logger)
         {
@@ -53,6 +53,8 @@ namespace Promitor.Integrations.Sinks.Statsd
                     case StatsdFormatterTypesEnum.Geneva:
                         reportMetricTasks.Add(ReportMetricWithGenevaFormattingAsync(metricName, metricDescription, metricValue, scrapeResult.Labels));
                         break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(formatterType), $"{formatterType} is not supported as formatting type.");
                 }
 
                 await Task.WhenAll(reportMetricTasks);
@@ -70,16 +72,17 @@ namespace Promitor.Integrations.Sinks.Statsd
             return Task.CompletedTask;
         }
 
+        [SuppressMessage("ReSharper", "UnusedParameter.Local")]
         private Task ReportMetricWithGenevaFormattingAsync(string metricName, string metricDescription, double metricValue, Dictionary<string, string> labels)
         {
             Guard.NotNullOrEmpty(metricName, nameof(metricName));
             Guard.NotNull(_statsDConfiguration.CurrentValue, nameof(_statsDConfiguration.CurrentValue));
-            Guard.NotNull(_statsDConfiguration.CurrentValue.Geneva, nameof(_statsDConfiguration.CurrentValue.Geneva));
+            Guard.NotNull(_statsDConfiguration.CurrentValue.Geneva, new ArgumentException ("Geneva formatter settings are required", nameof(_statsDConfiguration.CurrentValue.Geneva)));
 
             var bucket = JsonConvert.SerializeObject(new
             {
-                Account = _statsDConfiguration.CurrentValue.Geneva.Account,
-                Namespace = _statsDConfiguration.CurrentValue.Geneva.Namespace,
+                _statsDConfiguration.CurrentValue.Geneva?.Account,
+                _statsDConfiguration.CurrentValue.Geneva?.Namespace,
                 Metric = metricName,
                 Dims = labels
             });
