@@ -6,4 +6,4 @@ version:
 
 #### Integration Azure
 
-- {{% tag added %}} Provide path to read app secret key from file
+- {{% tag added %}} Provide path to read app secret key from file.
